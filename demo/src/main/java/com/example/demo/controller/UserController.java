@@ -1,20 +1,24 @@
 package com.example.demo.controller;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.ModelAndView;
 
-import com.example.demo.dto.JwtResponse;
 import com.example.demo.dto.LoginRequest;
-import com.example.demo.dto.SignUpRequest;
 import com.example.demo.model.User;
 import com.example.demo.security.JwtTokenProvider;
 import com.example.demo.service.UserService;
@@ -35,33 +39,29 @@ public class UserController {
     private AuthenticationManager authenticationManager;
 
     @PostMapping("/signup")
-    public ResponseEntity<?> registerUser(@RequestBody @Valid SignUpRequest signUpRequest) {
-        System.out.println("------------------------------------------");
-        if (userService.existsByUsername(signUpRequest.getUsername())) {
-            return ResponseEntity.badRequest().body("Username is already taken!");
-        }
-
-        User user = new User();
-        user.setUsername(signUpRequest.getUsername());
-        user.setPassword(signUpRequest.getPassword());
-
+    public ModelAndView registerUser(User user) {
         userService.saveUser(user);
 
-        return ResponseEntity.ok("User registered successfully!");
+        return new  ModelAndView("index");
+
     }
 
-    @PostMapping("/signin")
-    public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
-        Authentication authentication = authenticationManager.authenticate(
-            new UsernamePasswordAuthenticationToken(
-                loginRequest.getUsername(),
-                loginRequest.getPassword()
-            )
-        );
+    @PostMapping(value = "/signin", 
+                consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_FORM_URLENCODED_VALUE},
+                produces = MediaType.APPLICATION_JSON_VALUE)
+    public ModelAndView authenticateUser(LoginRequest loginRequest) {
+            Authentication authentication = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(
+                    loginRequest.getUsername(),
+                    loginRequest.getPassword()
+                )
+            );
 
-        SecurityContextHolder.getContext().setAuthentication(authentication);
-        String jwt = jwtTokenProvider.generateToken(authentication);
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+            String jwt = jwtTokenProvider.generateToken(authentication);
 
-        return ResponseEntity.ok(new JwtResponse(jwt));
+            return new ModelAndView("chat");
     }
+
+
 }

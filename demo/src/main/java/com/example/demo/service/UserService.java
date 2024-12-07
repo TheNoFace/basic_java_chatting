@@ -33,9 +33,10 @@ public class UserService implements UserDetailsService {
         );
     }
 
-    public User saveUser(User user) {
+    public void saveUser(User user) {
+        user.setUsername(user.getUsername());
         user.setPassword(passwordEncoder.encode(user.getPassword()));
-        return userRepository.save(user);
+        userRepository.save(user);
     }
 
     public boolean existsByUsername(String username) {

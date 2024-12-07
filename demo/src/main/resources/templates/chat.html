@@ -23,7 +23,7 @@
 
     <script th:inline="javascript">
         const roomId = /*[[${roomId}]]*/ 'defaultRoomId';
-        const username = localStorage.getItem('username');
+        let username = localStorage.getItem('username');
         let stompClient = null;
 
         function connect() {
@@ -54,7 +54,7 @@
             event.preventDefault();
             const messageInput = document.getElementById('message');
             const messageContent = messageInput.value.trim();
-            
+
             if (messageContent && stompClient) {
                 const chatMessage = {
                     type: 'CHAT',
@@ -62,9 +62,9 @@
                     sender: username,
                     roomId: roomId
                 };
-                
+
                 stompClient.send("/app/chat.sendMessage", {}, JSON.stringify(chatMessage));
-                messageInput.value = '';
+                messageInput.value = '';  // 메시지 전송 후 입력란 초기화
             }
         }
 
@@ -72,8 +72,8 @@
             const chatBox = document.getElementById('chat-box');
             const messageElement = document.createElement('div');
             messageElement.classList.add('mb-2');
-            
-            switch(message.type) {
+
+            switch (message.type) {
                 case 'JOIN':
                     messageElement.classList.add('text-muted');
                     messageElement.textContent = `${message.sender} joined the chat`;
@@ -86,15 +86,14 @@
                     messageElement.innerHTML = `<strong>${message.sender}:</strong> ${message.content}`;
                     break;
             }
-            
-            chatBox.appendChild(messageElement);
-            chatBox.scrollTop = chatBox.scrollHeight;
-        }
 
+    chatBox.appendChild(messageElement);
+    chatBox.scrollTop = chatBox.scrollHeight;  // 최신 메시지가 보이도록 스크롤
+}
         // 페이지 로드 시 연결
         window.onload = function() {
             if (!username) {
-                username = prompt('Please enter your username:');
+                username = prompt('Please enter your username:');  // username을 재할당
                 if (username) {
                     localStorage.setItem('username', username);
                 } else {
@@ -105,7 +104,6 @@
             }
             connect();
         };
-
         // 폼 제출 이벤트 리스너
         document.getElementById('chat-form').addEventListener('submit', sendMessage);
 
