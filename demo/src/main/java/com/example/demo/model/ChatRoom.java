@@ -7,6 +7,7 @@ import java.util.Set;
 
 
 import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -23,12 +24,17 @@ public class ChatRoom {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     
+    @Column(name = "room_id")
     private String roomId;
-    private String name;
+
+    private String name; // 방 이름
     
     @OneToMany(mappedBy = "chatRoom", cascade = CascadeType.ALL)
     private List<ChatMessage> messages = new ArrayList<>();
     
     @ManyToMany
     private Set<User> participants = new HashSet<>();
+
+    @Column(name = "room_count") // 인원수 설정
+    private int roomcount ; 
 }

@@ -63,4 +63,5 @@ public class ChatService {
         room.getParticipants().remove(user);
         chatRoomRepository.save(room);
     }
+    
 }

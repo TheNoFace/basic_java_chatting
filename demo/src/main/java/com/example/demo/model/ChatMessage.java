@@ -2,6 +2,9 @@ package com.example.demo.model;
 
 import java.time.LocalDateTime;
 
+import org.hibernate.annotations.CreationTimestamp;
+
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -18,9 +21,13 @@ public class ChatMessage {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+
     private String type;
     private String content;
     private String sender;
+
+    @Column(updatable = false)
+    @CreationTimestamp
     private LocalDateTime timestamp;
 
     @ManyToOne

@@ -44,6 +44,7 @@ public class SecurityConfig {
             .and()
             .authorizeRequests()
                 .requestMatchers("/api/auth/**").permitAll()
+                .requestMatchers("/api/**").permitAll()
                 .requestMatchers("/","/login","/signup","/signin").permitAll() 
                 .requestMatchers("/ws/**").permitAll()
                 .anyRequest().authenticated()

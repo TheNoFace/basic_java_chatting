@@ -21,6 +21,7 @@ import org.springframework.web.servlet.ModelAndView;
 import com.example.demo.dto.LoginRequest;
 import com.example.demo.model.User;
 import com.example.demo.security.JwtTokenProvider;
+import com.example.demo.service.ChatService;
 import com.example.demo.service.UserService;
 
 import jakarta.validation.Valid;
@@ -31,6 +32,9 @@ public class UserController {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private ChatService chatService;
 
     @Autowired
     private JwtTokenProvider jwtTokenProvider;
@@ -60,7 +64,9 @@ public class UserController {
             SecurityContextHolder.getContext().setAuthentication(authentication);
             String jwt = jwtTokenProvider.generateToken(authentication);
 
-            return new ModelAndView("chat");
+            ModelAndView mv = new ModelAndView("roomList");
+            mv.addObject("rooms", chatService.getAllRooms());
+            return mv;
     }
 
 

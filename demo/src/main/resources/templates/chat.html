@@ -76,11 +76,11 @@
             switch (message.type) {
                 case 'JOIN':
                     messageElement.classList.add('text-muted');
-                    messageElement.textContent = `${message.sender} joined the chat`;
+                    messageElement.textContent = `${message.sender} 가 들어왔습니다.`;
                     break;
                 case 'LEAVE':
                     messageElement.classList.add('text-muted');
-                    messageElement.textContent = `${message.sender} left the chat`;
+                    messageElement.textContent = `${message.sender} 가 떠났습니다.`;
                     break;
                 case 'CHAT':
                     messageElement.innerHTML = `<strong>${message.sender}:</strong> ${message.content}`;

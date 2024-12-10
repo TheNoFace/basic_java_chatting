@@ -1,5 +1,6 @@
 package com.example.demo.controller;
 
+
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,6 +11,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.ModelAndView;
 
 import com.example.demo.model.ChatRoom;
 import com.example.demo.service.ChatService;
@@ -21,18 +23,28 @@ public class RoomController {
     @Autowired
     private ChatService chatService;
 
+    @GetMapping
+    public ModelAndView getRooms() {
+        List<ChatRoom> rooms = chatService.getAllRooms();
+        System.out.println("Fetched rooms: " + rooms);  // 디버깅용 로그
+        
+        ModelAndView mv = new ModelAndView("roomList");
+        mv.addObject("rooms", rooms);
+        return mv;
+    }
+
+
     @PostMapping
     public ResponseEntity<ChatRoom> createRoom(@RequestBody ChatRoom chatRoom) {
+        System.out.println(chatRoom);
         return ResponseEntity.ok(chatService.createRoom(chatRoom));
     }
 
-    @GetMapping
-    public ResponseEntity<List<ChatRoom>> getAllRooms() {
-        return ResponseEntity.ok(chatService.getAllRooms());
-    }
-
     @GetMapping("/{roomId}")
-    public ResponseEntity<ChatRoom> getRoom(@PathVariable String roomId) {
-        return ResponseEntity.ok(chatService.getRoom(roomId));
+    public ModelAndView getRoom(@PathVariable String roomId) {
+        ModelAndView mv = new ModelAndView("chat");
+        mv.addObject("room", chatService.getRoom(roomId));
+        mv.addObject("roomId", roomId);
+        return mv;
     }
 }
