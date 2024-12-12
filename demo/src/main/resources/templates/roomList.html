@@ -10,21 +10,23 @@
         <h2 class="text-center">Chat Rooms</h2>
         
         
-        <!-- 새 채팅방 생성 폼 -->
         <div class="mb-4">
             <form id="createRoomForm" class="d-flex gap-2">
                 <input type="text" class="form-control" id="roomName" placeholder="Enter room name" required>
-                <input type="number" class="form-control" id="userCount" placeholder="Max users">
+                <input type="number" class="form-control" id="userCount" placeholder="Max users" min="2" required>
                 <button type="submit" class="btn btn-primary">Create Room</button>
             </form>
         </div>
-
+        
         <!-- 채팅방 목록 -->
         <div class="list-group">
             <div th:each="room : ${rooms}" class="list-group-item list-group-item-action">
                 <div class="d-flex justify-content-between align-items-center">
                     <a th:href="@{'/api/rooms/' + ${room.roomId}}" th:text="${room.name}" class="text-decoration-none"></a>
-                    <span class="badge bg-primary rounded-pill" th:text="${room.roomcount + ' users'}"> </span>
+                    <div>
+                        <span class="badge bg-success me-2" th:text="${room.currentUserCount + '/' + room.roomcount + ' users'}"></span>
+                        <span th:if="${room.currentUserCount >= room.roomcount}" class="badge bg-danger">Full</span>
+                    </div>
                 </div>
             </div>
         </div>
@@ -40,12 +42,17 @@
 
         $('#createRoomForm').submit(function(e) {
             e.preventDefault();
+            var maxUsers = parseInt($('#userCount').val());
+            
+            if (maxUsers < 2) {
+                alert('최소 2명 이상의 사용자를 설정해주세요.');
+                return;
+            }
+            
             var roomData = {
                 name: $('#roomName').val(),
-                roomcount: $('#userCount').val() || 0  // userCount -> roomcount로 변경
-            };
-            console.log('Sending room data:', roomData);
-
+                roomcount: maxUsers
+            }; 
             $.ajax({
                 url: '/api/rooms',
                 type: 'POST',
