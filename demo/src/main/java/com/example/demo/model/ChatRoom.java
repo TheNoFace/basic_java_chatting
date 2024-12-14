@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.UUID;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -39,49 +38,8 @@ public class ChatRoom {
     private int roomcount ;
     
     
-    // private int currentUserCount = 0;           // 현재 인원수 
-    // private Set<String> users = new HashSet<>(); // 현재 참여중인 인원
-
-
-    // public static ChatRoom create(String name, int roomcount) {
-    //     ChatRoom chatRoom = new ChatRoom();
-    //     chatRoom.roomId = UUID.randomUUID().toString();
-    //     chatRoom.name = name;
-    //     chatRoom.roomcount = roomcount;
-    //     chatRoom.currentUserCount = 0;
-    //     return chatRoom;
-    // }
-
-    // // 사용자 입장
-    // public boolean addUser(String username) {
-    //     if (isFull()) {
-    //         return false;
-    //     }
-    //     if (users.add(username)) {
-    //         currentUserCount++;
-    //         return true;
-    //     }
-    //     return false;
-    // }
-
-    // // 사용자 퇴장
-    // public boolean removeUser(String username) {
-    //     if (users.remove(username)) {
-    //         currentUserCount--;
-    //         return true;
-    //     }
-    //     return false;
-    // }
-
-    // // 방이 가득 찼는지 확인
-    // public boolean isFull() {
-    //     return currentUserCount >= roomcount;
-    // }
-
-    // // 특정 사용자가 방에 있는지 확인
-    // public boolean containsUser(String username) {
-    //     return users.contains(username);
-    // }
+    private int currentUserCount ;
+    private boolean isFull ; 
 
 
 }
