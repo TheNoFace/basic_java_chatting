@@ -27,12 +27,13 @@ public class RoomController {
     @GetMapping
     public ModelAndView getRooms() {
         List<ChatRoom> rooms = chatService.getAllRooms();
-        System.out.println("Fetched rooms: " + rooms);  // 디버깅용 로그
         
         ModelAndView mv = new ModelAndView("roomList");
         mv.addObject("rooms", rooms);
         return mv;
     }
+
+
 
 
     @PostMapping
@@ -50,16 +51,4 @@ public class RoomController {
     }
 
 
-    // @GetMapping("/{roomId}/check")
-    // @ResponseBody
-    // public ResponseEntity<?> checkRoomAvailability(@PathVariable String roomId) {
-    //     ChatRoom room = chatRoomService.getRoom(roomId);
-    //     if (room == null) {
-    //         return ResponseEntity.notFound().build();
-    //     }
-    //     if (room.isFull()) {
-    //         return ResponseEntity.badRequest().body("Room is full");
-    //     }
-    //     return ResponseEntity.ok().build();
-    // }
 }

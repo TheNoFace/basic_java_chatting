@@ -30,6 +30,9 @@ public class ChatMessage {
     @CreationTimestamp
     private LocalDateTime timestamp;
 
+    @Column(name = "message_room_id")  // 컬럼명을 다르게 지정
+    private String roomId;
+
     @ManyToOne
     @JoinColumn(name = "room_id")
     private ChatRoom chatRoom;

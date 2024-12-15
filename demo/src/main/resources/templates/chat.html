@@ -53,6 +53,7 @@
 <body>
     <div class="container mt-5">
         <h2 class="text-center">Chat Room</h2>
+        <button id="leaveBtn" class="btn btn-danger">나가기</button>
         <div id="chat-box" class="border p-3 mb-3" style="height: 400px; overflow-y: scroll;">
             <!-- 채팅 메시지들이 여기에 표시됩니다 -->
         </div>
@@ -182,6 +183,55 @@
                 stompClient.disconnect();
             }
         };
+
+
+            // 나가기 버튼 이벤트 리스너 추가
+    document.getElementById('leaveBtn').addEventListener('click', function() {
+        if (confirm('채팅방을 나가시겠습니까?')) {
+            leaveRoom();
+        }
+    });
+
+        function leaveRoom() {
+        if (stompClient) {
+            const leaveMessage = {
+                type: 'LEAVE',
+                sender: username,
+                roomId: roomId,
+                chatRoom: {
+                    roomId: roomId
+                }
+            };
+            
+            // 서버에 LEAVE 메시지 전송
+            stompClient.send("/app/chat.leaveRoom", {}, JSON.stringify(leaveMessage));
+            
+            // WebSocket 연결 해제
+            stompClient.disconnect();
+            
+            // 채팅방 목록 페이지로 이동
+            window.location.href = '/api/rooms';
+        }
+    }
+
+    // window.onbeforeunload도 같은 방식으로 수정
+    window.onbeforeunload = function() {
+        if (stompClient) {
+            const leaveMessage = {
+                type: 'LEAVE',
+                sender: username,
+                roomId: roomId,
+                chatRoom: {
+                    roomId: roomId
+                }
+            };
+            stompClient.send("/app/chat.leaveRoom", {}, JSON.stringify(leaveMessage));
+            stompClient.disconnect();
+        }
+    };
+
+
+
     </script>
 </body>
 </html>

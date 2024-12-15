@@ -28,4 +28,16 @@ public class ChatController {
         headerAccessor.getSessionAttributes().put("username", chatMessage.getSender());
         return chatMessage;
     }
+
+
+    @MessageMapping("/chat.leaveRoom")
+    @SendTo("/topic/public")
+    public ChatMessage leaveRoom(@Payload ChatMessage chatMessage) {
+        // roomId를 ChatMessage에서 가져오도록 수정
+        String roomId = chatMessage.getChatRoom().getRoomId();
+        chatService.leaveRoom(roomId, chatMessage.getSender());
+        return chatMessage;
+    }
+
+
 }
