@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>그룹웨어 메인</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #f0f2f5;
+    }
+
+    .container {
+      display: flex;
+      height: 100vh;
+    }
+
+    .sidebar {
+      width: 220px;
+      background-color: #004080;
+      color: white;
+      display: flex;
+      flex-direction: column;
+      padding: 20px;
+    }
+
+    .sidebar h2 {
+      font-size: 22px;
+      margin-bottom: 30px;
+    }
+
+    .sidebar a {
+      color: white;
+      text-decoration: none;
+      margin-bottom: 15px;
+      font-weight: bold;
+    }
+
+    .main-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      padding: 30px;
+      overflow-y: auto;
+    }
+
+    .section {
+      margin-bottom: 30px;
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+
+    .chat-container {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    #user-list {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    #chat-box {
+      flex: 1;
+      padding: 10px;
+      border: 1px solid #ccc;
+      background-color: #fff;
+      border-radius: 5px;
+      overflow-y: auto;
+      height: 300px;
+      margin-bottom: 10px;
+    }
+
+    #chat-input {
+      width: calc(100% - 70px);
+      padding: 5px;
+    }
+
+    .footer {
+      text-align: center;
+      font-size: 12px;
+      color: #aaa;
+      margin-top: 40px;
+    }
+  .chat-popup {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 250px;
+    background: white;
+    border: 1px solid #ccc;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+    border-radius: 10px;
+    z-index: 999;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    margin-left: 10px;
+  }
+
+  .chat-header {
+    background: #004080;
+    color: white;
+    padding: 10px;
+    font-weight: bold;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .chat-body {
+    flex: 1;
+    padding: 10px;
+    height: 200px;
+    overflow-y: auto;
+    font-size: 14px;
+  }
+
+  .chat-input-area {
+    display: flex;
+    border-top: 1px solid #ccc;
+  }
+
+  .chat-input-area input {
+    flex: 1;
+    padding: 5px;
+    border: none;
+  }
+
+  .chat-input-area button {
+    padding: 5px 10px;
+    border: none;
+    background: #004080;
+    color: white;
+    cursor: pointer;
+  }
+</style>
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="sidebar">
+      <h2>Groupware</h2>
+      <a href="#">메인</a>
+      <a href="#">쪽지함</a>
+      <a href="#">일정</a>
+      <a href="#">결재</a>
+      <a href="#">사원정보</a>
+      <a href="/logout">로그아웃</a>
+    </div>
+
+    <div class="main-content">
+      <div class="section chat-container">
+
+        <div class="section">
+          <h3>💬 채팅 대상 선택</h3>
+          <div id="user-list">
+            <th:block th:each="user : ${userList}">
+              <button th:onclick="|openChat('${user.username}')|" th:text="${user.username}"></button>
+            </th:block>
+          </div>
+        </div>
+        
+        <div id="chat-container"></div>
+
+      <div class="section">
+        <h3>📢 공지사항</h3>
+        <div class="notice-item">[업무] 4월 5일 서버 점검 예정</div>
+        <div class="notice-item">[인사] 신입사원 OT 일정 공지</div>
+        <div class="notice-item">[보안] 비밀번호 변경 캠페인 안내</div>
+      </div>
+
+      <div class="section">
+        <h3>✅ 나의 할 일</h3>
+        <div class="task-item">4/5까지 보고서 제출</div>
+        <div class="task-item">고객 응대 결과 보고</div>
+        <div class="task-item">결재 요청서 확인</div>
+      </div>
+
+      <div class="footer">
+        ⓒ 2025 Groupware System. All rights reserved.
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/sockjs-client/dist/sockjs.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/stompjs/lib/stomp.min.js"></script>
+  <script>
+    let sender = /*[[${loggedInUsername}]]*/ 'unknown'; 
+    const chatWindows = {};
+  
+    const socket = new SockJS('/ws-chat');
+    const stompClient = Stomp.over(socket);
+  
+    stompClient.connect({}, () => {
+      stompClient.subscribe('/user/' + sender + '/queue/messages', (msg) => {
+        const data = JSON.parse(msg.body);
+        const otherUser = data.sender === sender ? data.receiver : data.sender;
+  
+        if (!chatWindows[otherUser]) {
+          openChat(otherUser);
+        }
+  
+        const body = document.querySelector(`#chat-${otherUser} .chat-body`);
+        body.innerHTML += `<div><b>${data.sender}:</b> ${data.content}</div>`;
+        body.scrollTop = body.scrollHeight;
+      });
+    });
+  
+    function openChat(userId) {
+      if (chatWindows[userId]) return;
+
+      const chatBox = document.createElement('div');
+      chatBox.className = 'chat-popup';
+      chatBox.id = `chat-${userId}`;
+      chatBox.innerHTML = `
+        <div class="chat-header">
+          ${userId}
+          <span style="cursor:pointer;" onclick="closeChat('${userId}')">X</span>
+        </div>
+        <div class="chat-body" id="chat-body-${userId}"></div>
+        <div class="chat-input-area">
+          <input type="text" id="input-${userId}" placeholder="메시지...">
+          <button onclick="sendMessage('${userId}')">보내기</button>
+        </div>
+      `;
+      document.getElementById('chat-container').appendChild(chatBox);
+      chatWindows[userId] = chatBox;
+
+      // fetch(`/chat/history?user1=${sender}&user2=${userId}`)
+      //   .then(res => res.json())
+      //   .then(messages => {
+      //     const chatBody = document.getElementById(`chat-body-${userId}`);
+      //     messages.forEach(msg => {
+      //       const who = msg.sender === sender ? "나" : msg.sender;
+      //       chatBody.innerHTML += `<div><b>${who}:</b> ${msg.content}</div>`;
+      //     });
+      //   });
+}
+  
+    function closeChat(userId) {
+      const box = chatWindows[userId];
+      if (box) {
+        box.remove();
+        delete chatWindows[userId];
+      }
+    }
+  
+    function sendMessage(receiver) {
+    const input = document.getElementById(`input-${receiver}`);
+    const content = input.value;
+    if (!content.trim()) return;
+
+    const message = {
+      sender: sender,
+      receiver: receiver,
+      content: content,
+      timestamp: new Date().toISOString()
+    };
+
+    stompClient.send("/app/chat.send", {}, JSON.stringify(message));
+    const chatBody = document.getElementById(`chat-body-${receiver}`);
+    chatBody.innerHTML += `<div><b>나:</b> ${content}</div>`;
+    input.value = '';
+  }
+
+  
+  </script>
+  
+</body>
+</html>

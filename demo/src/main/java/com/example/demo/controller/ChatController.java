@@ -1,6 +1,12 @@
 package com.example.demo.controller;
 
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
@@ -15,11 +21,7 @@ public class ChatController {
     @Autowired
     private ChatService chatService;
 
-    @MessageMapping("/chat.sendMessage")
-    @SendTo("/topic/public")
-    public ChatMessage sendMessage(@Payload ChatMessage chatMessage) {
-        return chatService.saveAndReturnMessage(chatMessage);
-    }
+
 
     @MessageMapping("/chat.addUser")
     @SendTo("/topic/public")
@@ -30,13 +32,20 @@ public class ChatController {
     }
 
 
-    @MessageMapping("/chat.leaveRoom")
-    @SendTo("/topic/public")
-    public ChatMessage leaveRoom(@Payload ChatMessage chatMessage) {
-        // roomId를 ChatMessage에서 가져오도록 수정
-        String roomId = chatMessage.getChatRoom().getRoomId();
-        chatService.leaveRoom(roomId, chatMessage.getSender());
-        return chatMessage;
+    @MessageMapping("/chat/send") // /app/chat/send
+    @SendTo("/topic/messages")
+    public ChatMessage send(ChatMessage message) {
+        return message;
+    }
+
+
+    @GetMapping("/chat/history")
+    @ResponseBody
+    public List<ChatMessage> getChatHistory(
+        @RequestParam String user1,
+        @RequestParam String user2
+    ) {
+        return chatService.getChatHistoryBetween(user1, user2);
     }
 
 

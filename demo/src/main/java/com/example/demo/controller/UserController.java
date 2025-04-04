@@ -27,19 +27,13 @@ public class UserController {
     private UserService userService;
 
     @Autowired
-    private ChatService chatService;
-
-    @Autowired
-    private JwtTokenProvider jwtTokenProvider;
-
-    @Autowired
     private AuthenticationManager authenticationManager;
 
     @PostMapping("/signup")
     public ModelAndView registerUser(User user) {
         userService.saveUser(user);
 
-        return new  ModelAndView("index");
+        return new  ModelAndView("login");
 
     }
 
@@ -55,12 +49,6 @@ public class UserController {
             );
 
             SecurityContextHolder.getContext().setAuthentication(authentication);
-            String jwt = jwtTokenProvider.generateToken(authentication);
-
-            ModelAndView mv = new ModelAndView("roomList");
-            mv.addObject("rooms", chatService.getAllRooms());
-            return mv;
+            return new ModelAndView("redirect:/maingroupware");
     }
-
-
 }
