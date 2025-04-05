@@ -4,39 +4,19 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.example.demo.model.User;
 import com.example.demo.repository.UserRepository;
 
 @Service
-public class UserService implements UserDetailsService {
-
+public class UserService {
     @Autowired
     private UserRepository userRepository;
-    
-    @Autowired
-    private PasswordEncoder passwordEncoder;
-
-    @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        User user = userRepository.findByUsername(username)
-            .orElseThrow(() -> new UsernameNotFoundException("User not found"));
-
-        return new org.springframework.security.core.userdetails.User(
-            user.getUsername(),
-            user.getPassword(),
-            new ArrayList<>()
-        );
-    }
 
     public void saveUser(User user) {
         user.setUsername(user.getUsername());
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
+        user.setPassword(user.getPassword()); 
         userRepository.save(user);
     }
 
@@ -45,7 +25,15 @@ public class UserService implements UserDetailsService {
     }
 
     public List<User> getAllUsersExcept(String username) {
-        return userRepository.findByUsernameNot(username);  
+        return userRepository.findByUsernameNot(username);
     }
-    
+
+    public User findByUsername(String username) {
+        return userRepository.findByUsername(username).orElse(null);
+    }
+
+    public boolean matchesPassword(String rawPassword, String storedPassword) {
+        return rawPassword.equals(storedPassword); 
+    }
 }
+

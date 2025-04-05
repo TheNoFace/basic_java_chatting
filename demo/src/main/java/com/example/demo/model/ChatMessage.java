@@ -7,10 +7,12 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
 import lombok.Data;
 
 @Entity
 @Data
+@Table(name = "chat_message")
 public class ChatMessage {
 
     @Id
@@ -18,16 +20,17 @@ public class ChatMessage {
     private Long id;
 
     private String sender;  
-    private String message;
 
     private String receiver;
     private String content;
 
-    private LocalDateTime timestamp; // ★ 추가
+    private LocalDateTime timestamp; 
+
+    private boolean isread;
 
     @ManyToOne
-@JoinColumn(name = "user_id")
-private User user;
+    @JoinColumn(name = "user_id")
+    private User user;
 
 }
 

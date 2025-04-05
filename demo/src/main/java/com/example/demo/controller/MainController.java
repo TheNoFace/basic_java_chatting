@@ -1,14 +1,12 @@
 package com.example.demo.controller;
 
 
-import java.security.Principal;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.SessionAttribute;
 
 import com.example.demo.model.User;
@@ -35,51 +33,31 @@ public class MainController {
 
     
 
-    // @GetMapping("/")
-    // public String home() {
-    //     return "index";  
-    // }
-
-    // @GetMapping("/login")
-    // public String login() {
-    //     return "login";  
-    // }
-
+    // 기본 Get
     @GetMapping({"/", "/login"})
     public String loginPage() {
         return "login";  
     }
-
-    // @PostMapping()
-    // public 
-
-    // @PostMapping()
-    // public List<User> selectUser(){
-
-    //     return "" ; 
-    // }
-
 
     @GetMapping("/signup") // admin에서 사용
     public String signup() {
         return "signup";  
     }
 
+    // 로그인 후 메인 
     @GetMapping("/maingroupware")
-    public String mainPage(@SessionAttribute("loginUser") User user, Model model, Principal principal) {
-        String username = principal.getName(); // 로그인한 사용자
-        System.out.println("조회된 사용자 수: " + username);
-        List<User> userList = userService.getAllUsersExcept(username); 
-        System.out.println("조회된 사용자 수: " + userList.size());
-   
+    public String mainPage(@SessionAttribute("loginUser") User user, Model model) {
+        String username = user.getUsername(); // 세션에서 꺼낸 사용자 정보
+        List<User> userList = userService.getAllUsersExcept(username); // 본인 제외
         model.addAttribute("userList", userList);
         model.addAttribute("loggedInUsername", username);
-
-        model.addAttribute("chatList", chatService.getRecentChats(user.getId()));
         model.addAttribute("noticeList", noticeService.getRecentNotices());
         model.addAttribute("todoList", taskService.getMyTasks(user.getId()));
+    
         return "maingroupware";
     }
+    
+
 
 }
 
