@@ -1,52 +1,49 @@
 package com.example.demo.controller;
 
+import com.example.demo.model.ChatMessage;
+import com.example.demo.service.ChatService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.messaging.handler.annotation.*;
+import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.util.List;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.messaging.handler.annotation.MessageMapping;
-import org.springframework.messaging.handler.annotation.Payload;
-import org.springframework.messaging.handler.annotation.SendTo;
-import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
-import com.example.demo.model.ChatMessage;
-import com.example.demo.service.ChatService;
+import java.util.Map;
 
 @Controller
 public class ChatController {
 
     @Autowired
+    private SimpMessagingTemplate messagingTemplate;
+
+    @Autowired
     private ChatService chatService;
-
-
 
     @MessageMapping("/chat.addUser")
     @SendTo("/topic/public")
-    public ChatMessage addUser(@Payload ChatMessage chatMessage,
-                             SimpMessageHeaderAccessor headerAccessor) {
+    public ChatMessage addUser(@Payload ChatMessage chatMessage, SimpMessageHeaderAccessor headerAccessor) {
         headerAccessor.getSessionAttributes().put("username", chatMessage.getSender());
         return chatMessage;
     }
 
+    @MessageMapping("/chat.send")
+    public void handleMessage(@Payload ChatMessage message,
+                              @Header("simpSessionAttributes") Map<String, Object> sessionAttributes) {
 
-    @MessageMapping("/chat/send") // /app/chat/send
-    @SendTo("/topic/messages")
-    public ChatMessage send(ChatMessage message) {
-        return message;
+        ChatMessage saved = chatService.saveMessage(message);
+        messagingTemplate.getUserDestinationPrefix();
+        messagingTemplate.convertAndSend("/topic/messages/" + saved.getReceiver(), saved);
+    
     }
 
-
-    @GetMapping("/chat/history")
+    @GetMapping("/history/{sender}/{receiver}")
     @ResponseBody
-    public List<ChatMessage> getChatHistory(
-        @RequestParam String user1,
-        @RequestParam String user2
-    ) {
-        return chatService.getChatHistoryBetween(user1, user2);
+    public List<ChatMessage> getChatHistory(@PathVariable String sender,
+                                            @PathVariable String receiver) {
+        return chatService.getChatHistory(sender, receiver);
     }
-
-
 }

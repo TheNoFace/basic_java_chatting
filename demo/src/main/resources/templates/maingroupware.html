@@ -2,6 +2,7 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
   <meta charset="UTF-8">
+  <meta name="username" th:content="${loggedInUsername}">
   <title>그룹웨어 메인</title>
   <style>
     body {
@@ -52,10 +53,14 @@
       box-shadow: 0 2px 5px rgba(0,0,0,0.1);
     }
 
-    .chat-container {
-      flex: 1;
+    #chat-container {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
       display: flex;
-      flex-direction: column;
+      gap: 10px;
+      flex-direction: row-reverse; /* 우측부터 정렬 */
+      z-index: 999;
     }
 
     #user-list {
@@ -86,21 +91,15 @@
       color: #aaa;
       margin-top: 40px;
     }
-  .chat-popup {
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    width: 250px;
-    background: white;
-    border: 1px solid #ccc;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-    border-radius: 10px;
-    z-index: 999;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-    margin-left: 10px;
-  }
+    @media (max-width: 768px) {
+      .chat-popup {
+        width: 100%;
+        right: 0 !important;
+        left: 0;
+        bottom: 0;
+        border-radius: 0;
+      }
+    }
 
   .chat-header {
     background: #004080;
@@ -138,6 +137,36 @@
     color: white;
     cursor: pointer;
   }
+  .badge {
+  background-color: red;
+  color: white;
+  font-size: 12px;
+  padding: 2px 6px;
+  border-radius: 10px;
+  margin-left: 5px;
+}
+.message {
+  margin: 5px 0;
+  padding: 8px 12px;
+  border-radius: 15px;
+  max-width: 70%;
+  word-wrap: break-word;
+  clear: both;
+}
+
+.message.self {
+  background-color: #d1e7ff;
+  align-self: flex-end;
+  margin-left: auto;
+  text-align: right;
+}
+
+.message.other {
+  background-color: #f1f1f1;
+  align-self: flex-start;
+  margin-right: auto;
+  text-align: left;
+}
 </style>
   </style>
 </head>
@@ -145,11 +174,8 @@
   <div class="container">
     <div class="sidebar">
       <h2>Groupware</h2>
-      <a href="#">메인</a>
-      <a href="#">쪽지함</a>
-      <a href="#">일정</a>
-      <a href="#">결재</a>
-      <a href="#">사원정보</a>
+      <a href="/maingroupware">메인</a>
+      <a href="#">사원 검색</a>
       <a href="/logout">로그아웃</a>
     </div>
 
@@ -157,17 +183,22 @@
       <div class="section chat-container">
 
         <div class="section">
-          <h3>💬 채팅 대상 선택</h3>
+          <h3>💬 채팅</h3>
           <div id="user-list">
             <th:block th:each="user : ${userList}">
-              <button th:onclick="|openChat('${user.username}')|" th:text="${user.username}"></button>
+              <button 
+              th:attr="data-username=${user.username}" 
+              onclick="openChat(this.getAttribute('data-username'))">
+              <span th:text="${user.username}"></span>
+              <span class="badge" id="badge-${user.username}" style="display:none;">0</span>
+            </button>
             </th:block>
           </div>
         </div>
         
         <div id="chat-container"></div>
 
-      <div class="section">
+      <!-- <div class="section">
         <h3>📢 공지사항</h3>
         <div class="notice-item">[업무] 4월 5일 서버 점검 예정</div>
         <div class="notice-item">[인사] 신입사원 OT 일정 공지</div>
@@ -179,7 +210,7 @@
         <div class="task-item">4/5까지 보고서 제출</div>
         <div class="task-item">고객 응대 결과 보고</div>
         <div class="task-item">결재 요청서 확인</div>
-      </div>
+      </div> -->
 
       <div class="footer">
         ⓒ 2025 Groupware System. All rights reserved.
@@ -189,29 +220,45 @@
 
   <script src="https://cdn.jsdelivr.net/npm/sockjs-client/dist/sockjs.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/stompjs/lib/stomp.min.js"></script>
-  <script>
-    let sender = /*[[${loggedInUsername}]]*/ 'unknown'; 
+  <script >
+
+    let sender = document.querySelector('meta[name="username"]').content;
     const chatWindows = {};
-  
     const socket = new SockJS('/ws-chat');
     const stompClient = Stomp.over(socket);
-  
+
     stompClient.connect({}, () => {
-      stompClient.subscribe('/user/' + sender + '/queue/messages', (msg) => {
-        const data = JSON.parse(msg.body);
-        const otherUser = data.sender === sender ? data.receiver : data.sender;
-  
-        if (!chatWindows[otherUser]) {
-          openChat(otherUser);
-        }
-  
-        const body = document.querySelector(`#chat-${otherUser} .chat-body`);
-        body.innerHTML += `<div><b>${data.sender}:</b> ${data.content}</div>`;
+    stompClient.send("/app/chat.addUser", {}, JSON.stringify({ sender: sender }));
+    stompClient.subscribe('/topic/messages/' + sender, (msg) => {
+      const chatMessage = JSON.parse(msg.body);
+      const otherUser = chatMessage.sender === sender ? chatMessage.receiver : chatMessage.sender;
+
+      if (!chatWindows[otherUser]) {
+        unreadCounts[otherUser] = (unreadCounts[otherUser] || 0) + 1;
+        updateBadge(otherUser);
+        showNotification(`${otherUser}님으로부터 새로운 메시지`);
+      } else {
+        const body = document.getElementById(`chat-body-${otherUser}`);
+        const messageClass = chatMessage.sender === sender ? 'self' : 'other';
+        body.innerHTML += `<div class="message ${messageClass}">${chatMessage.content}</div>`;
         body.scrollTop = body.scrollHeight;
-      });
+      }
     });
-  
-    function openChat(userId) {
+  });
+
+    function scrollToBottom(elementId) {
+    const el = document.getElementById(elementId);
+    if (el) {
+      el.scrollTop = el.scrollHeight;
+    }
+  }
+
+  const unreadCounts = {};
+      function openChat(userId) {
+        if (Object.keys(chatWindows).length >= 3) {
+          alert('최대 3개의 채팅창만 열 수 있습니다.');
+          return;
+        }
       if (chatWindows[userId]) return;
 
       const chatBox = document.createElement('div');
@@ -231,17 +278,40 @@
       document.getElementById('chat-container').appendChild(chatBox);
       chatWindows[userId] = chatBox;
 
-      // fetch(`/chat/history?user1=${sender}&user2=${userId}`)
-      //   .then(res => res.json())
-      //   .then(messages => {
-      //     const chatBody = document.getElementById(`chat-body-${userId}`);
-      //     messages.forEach(msg => {
-      //       const who = msg.sender === sender ? "나" : msg.sender;
-      //       chatBody.innerHTML += `<div><b>${who}:</b> ${msg.content}</div>`;
-      //     });
-      //   });
-}
-  
+      // ⬇️ 채팅 내역 불러오기
+      fetch(`/history/${encodeURIComponent(sender)}/${encodeURIComponent(userId)}`)
+      .then(res => res.json())
+      .then(messages => {
+        const body = document.getElementById(`chat-body-${userId}`);
+        messages.forEach(msg => {
+          const messageClass = msg.sender === sender ? 'self' : 'other';
+          body.innerHTML += `<div class="message ${messageClass}">${msg.content}</div>`;
+        });
+        scrollToBottom(`chat-body-${userId}`);
+        body.scrollTop = body.scrollHeight;
+      });
+
+        const input = document.getElementById(`input-${userId}`);
+        input.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter') {
+            sendMessage(userId);
+          }
+        });
+        unreadCounts[userId] = 0;
+        updateBadge(userId);
+    }
+    function updateBadge(userId) {
+      const badge = document.getElementById(`badge-${userId}`);
+      if (!badge) return; // 요소가 없으면 그냥 return
+
+      const count = unreadCounts[userId];
+      if (count > 0) {
+        badge.textContent = count;
+        badge.style.display = 'inline-block';
+      } else {
+        badge.style.display = 'none';
+      }
+    }
     function closeChat(userId) {
       const box = chatWindows[userId];
       if (box) {
@@ -264,8 +334,29 @@
 
     stompClient.send("/app/chat.send", {}, JSON.stringify(message));
     const chatBody = document.getElementById(`chat-body-${receiver}`);
-    chatBody.innerHTML += `<div><b>나:</b> ${content}</div>`;
+    chatBody.innerHTML += `<div class="message self">${content}</div>`;
+    scrollToBottom(`chat-body-${receiver}`);
     input.value = '';
+  }
+
+
+    function showNotification(message) {
+    const noti = document.createElement('div');
+    noti.textContent = message;
+    noti.style.position = 'fixed';
+    noti.style.bottom = '100px';
+    noti.style.right = '20px';
+    noti.style.background = '#004080';
+    noti.style.color = 'white';
+    noti.style.padding = '10px 20px';
+    noti.style.borderRadius = '10px';
+    noti.style.boxShadow = '0 2px 10px rgba(0,0,0,0.3)';
+    noti.style.zIndex = 1000;
+    document.body.appendChild(noti);
+
+    setTimeout(() => {
+      noti.remove();
+    }, 3000);
   }
 
   
