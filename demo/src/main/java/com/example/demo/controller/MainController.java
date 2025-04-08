@@ -11,8 +11,6 @@ import org.springframework.web.bind.annotation.SessionAttribute;
 
 import com.example.demo.model.User;
 import com.example.demo.service.ChatService;
-// import com.example.demo.service.NoticeService;
-// import com.example.demo.service.TaskService;
 import com.example.demo.service.UserService;
 
 @Controller
@@ -23,15 +21,6 @@ public class MainController {
 
     @Autowired
     ChatService chatService ; 
-
-    // @Autowired
-    // NoticeService noticeService ; 
-
-    // @Autowired
-    // TaskService taskService ; 
-
-
-    
 
     // 기본 Get
     @GetMapping({"/", "/login"})
@@ -51,8 +40,6 @@ public class MainController {
         List<User> userList = userService.getAllUsersExcept(username); // 본인 제외
         model.addAttribute("userList", userList);
         model.addAttribute("loggedInUsername", username);
-        //model.addAttribute("noticeList", noticeService.getRecentNotices());
-        //model.addAttribute("todoList", taskService.getMyTasks(user.getId()));
     
         return "maingroupware";
     }

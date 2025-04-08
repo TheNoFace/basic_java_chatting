@@ -198,20 +198,6 @@
         
         <div id="chat-container"></div>
 
-      <!-- <div class="section">
-        <h3>📢 공지사항</h3>
-        <div class="notice-item">[업무] 4월 5일 서버 점검 예정</div>
-        <div class="notice-item">[인사] 신입사원 OT 일정 공지</div>
-        <div class="notice-item">[보안] 비밀번호 변경 캠페인 안내</div>
-      </div>
-
-      <div class="section">
-        <h3>✅ 나의 할 일</h3>
-        <div class="task-item">4/5까지 보고서 제출</div>
-        <div class="task-item">고객 응대 결과 보고</div>
-        <div class="task-item">결재 요청서 확인</div>
-      </div> -->
-
       <div class="footer">
         ⓒ 2025 Groupware System. All rights reserved.
       </div>
@@ -278,7 +264,6 @@
       document.getElementById('chat-container').appendChild(chatBox);
       chatWindows[userId] = chatBox;
 
-      // ⬇️ 채팅 내역 불러오기
       fetch(`/history/${encodeURIComponent(sender)}/${encodeURIComponent(userId)}`)
       .then(res => res.json())
       .then(messages => {

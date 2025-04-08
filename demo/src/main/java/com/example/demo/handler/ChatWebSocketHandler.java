@@ -14,7 +14,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Component
 public class ChatWebSocketHandler extends TextWebSocketHandler {
-    // 유저별 세션 관리
     private final Map<String, WebSocketSession> userSessions = new ConcurrentHashMap<>();
 
     @Override
@@ -47,8 +46,6 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
     }
 
     private String getUserIdFromSession(WebSocketSession session) {
-        // 로그인 유저 ID 가져오기
-        // 세션 속성이나 헤더에서 userId 추출
         return (String) session.getAttributes().get("userId");
     }
 }
