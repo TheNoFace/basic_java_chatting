@@ -30,18 +30,15 @@ public class User {
     @OneToMany(mappedBy = "user")
     private List<ChatMessage> chatMessages;
 
-<<<<<<< HEAD
     // @OneToMany(mappedBy = "user")
     // private List<Notice> notices;
 
     // @OneToMany(mappedBy = "user")
     // private List<Task> tasks;
-=======
-    @OneToMany(mappedBy = "user")
-    private List<Notice> notices;
+    // @OneToMany(mappedBy = "user")
+    // private List<Notice> notices;
 
-    @OneToMany(mappedBy = "user")
-    private List<Task> tasks;
->>>>>>> 752d62108de1c27c0ebc324ae358154cf3ad6260
+    // @OneToMany(mappedBy = "user")
+    // private List<Task> tasks;
 
 }
