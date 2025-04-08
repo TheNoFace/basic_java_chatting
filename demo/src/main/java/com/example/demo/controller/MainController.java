@@ -51,8 +51,13 @@ public class MainController {
         List<User> userList = userService.getAllUsersExcept(username); // 본인 제외
         model.addAttribute("userList", userList);
         model.addAttribute("loggedInUsername", username);
+<<<<<<< HEAD
         //model.addAttribute("noticeList", noticeService.getRecentNotices());
         //model.addAttribute("todoList", taskService.getMyTasks(user.getId()));
+=======
+        model.addAttribute("noticeList", noticeService.getRecentNotices());
+        model.addAttribute("todoList", taskService.getMyTasks(user.getId()));
+>>>>>>> 752d62108de1c27c0ebc324ae358154cf3ad6260
     
         return "maingroupware";
     }
