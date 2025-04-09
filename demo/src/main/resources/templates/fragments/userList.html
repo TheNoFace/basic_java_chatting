@@ -1,0 +1,28 @@
+<!-- templates/fragments/userList.html -->
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+    <div th:fragment="userListContent">
+        <ul>
+          <th:block th:each="user : ${userList}">
+            <button 
+            th:attr="data-username=${user.username}" 
+            onclick="openChat(this.getAttribute('data-username'))">
+            <span th:text="${user.username}"></span>
+            <span class="badge" id="badge-${user.username}" style="display:none;">0</span>
+          </button>
+          </th:block>
+
+        </ul>
+    </div>
+</body>
+</html>
+
+<!-- <th:block th:each="user : ${userList}">
+  <button 
+  th:attr="data-username=${user.username}" 
+  onclick="openChat(this.getAttribute('data-username'))">
+  <span th:text="${user.username}"></span>
+  <span class="badge" id="badge-${user.username}" style="display:none;">0</span>
+</button>
+</th:block> -->

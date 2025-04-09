@@ -30,15 +30,5 @@ public class User {
     @OneToMany(mappedBy = "user")
     private List<ChatMessage> chatMessages;
 
-    // @OneToMany(mappedBy = "user")
-    // private List<Notice> notices;
-
-    // @OneToMany(mappedBy = "user")
-    // private List<Task> tasks;
-    // @OneToMany(mappedBy = "user")
-    // private List<Notice> notices;
-
-    // @OneToMany(mappedBy = "user")
-    // private List<Task> tasks;
 
 }

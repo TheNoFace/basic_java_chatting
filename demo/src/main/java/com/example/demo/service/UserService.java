@@ -1,6 +1,5 @@
 package com.example.demo.service;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,6 +10,7 @@ import com.example.demo.repository.UserRepository;
 
 @Service
 public class UserService {
+
     @Autowired
     private UserRepository userRepository;
 
@@ -35,5 +35,11 @@ public class UserService {
     public boolean matchesPassword(String rawPassword, String storedPassword) {
         return rawPassword.equals(storedPassword); 
     }
+
+    public List<User> searchByNameExcludingSelf(String keyword, String currentUser) {
+        return userRepository.findByUsernameContainingAndUsernameNot(keyword, currentUser);
+    }
+    
+    
 }
 
