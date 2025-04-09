@@ -15,9 +15,13 @@ public class ChatService {
     private ChatRepository chatMessageRepository;
 
     public ChatMessage saveMessage(ChatMessage message) {
-        message.setTimestamp(LocalDateTime.now());
-        message.setIsread(false);
-        return chatMessageRepository.save(message);
+        try{
+            message.setTimestamp(LocalDateTime.now());
+            message.setIsread(false);
+            return chatMessageRepository.save(message) ; 
+        }catch(Exception e){
+            throw new RuntimeException(e);
+        }
     }
 
     public List<ChatMessage> getUnreadMessages(String receiver) {

@@ -28,8 +28,8 @@ public class UserService {
         return userRepository.findByUsernameNot(username);
     }
 
-    public User findByUsername(String username) {
-        return userRepository.findByUsername(username).orElse(null);
+    public User findByUsernameAndByPassword(String username ,String password) {
+        return userRepository.findByUsernameAndPassword(username,password).orElse(null);
     }
 
     public boolean matchesPassword(String rawPassword, String storedPassword) {

@@ -28,7 +28,7 @@ public class MainController {
         return "login";  
     }
 
-    @GetMapping("/signup") // admin에서 사용
+    @GetMapping("/signup") 
     public String signup() {
         return "signup";  
     }
@@ -36,13 +36,16 @@ public class MainController {
     // 로그인 후 메인 
     @GetMapping("/maingroupware")
     public String mainPage(@SessionAttribute("loginUser") User user, Model model) {
-        String username = user.getUsername(); // 세션에서 꺼낸 사용자 정보
-        List<User> userList = userService.getAllUsersExcept(username); // 본인 제외
+        String username = user.getUsername(); 
+        List<User> userList = userService.getAllUsersExcept(username); 
         model.addAttribute("userList", userList);
         model.addAttribute("loggedInUsername", username);
     
         return "maingroupware";
     }
+
+
+    
     
 
 
